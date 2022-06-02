@@ -1,81 +1,32 @@
-const fs = require('fs')
-const path = require('path')
 const vars = require('../../../../configs/vars')
-const { Movies } = require(vars.dirs.models)
+const { Users } = require(vars.dirs.models)
+const { Unauthorised } = require(vars.dirs.configs+"/errors")
 
-
-exports.get = async (req, res, next) => {
+exports.login = async (req, res, next) => {
   try {
-    let moviesData = []
-    if(req.params.id) {
-      const id = req.params.id
-      moviesData = await Movies.findOne( { _id: id } )
+    const { username, password } = req.body
+    const userData = await Users.findOne( { username } )
+    if(!userData) {
+      throw new Unauthorised("Invalid credentials")
     }
-    else {
-      moviesData = await Movies.find()
+    const passwordCheck = userData.matchPassword(password)
+    if(!passwordCheck) {
+      throw new Unauthorised("Invalid credentials")
     }
-    return res.json(moviesData)
+    return res.json( { success: true, message: "Logged in successfull", token: userData.token() } )
   }
   catch(e) {
-    next(e)
+    return next(e)
   }
 }
 
-exports.add = async (req, res, next) => {
+exports.register = async (req, res, next) => {
   try {
-    if(Object.values(req.file).length > 0) {
-      if(req.file.filename && req.file.path) {
-        req.body.poster = req.file.filename
-      }
-    }
-    const movie = new Movies(req.body)
-    await movie.save()
-    return res.json(movie)
+    const user = new Users(req.body)
+    await user.save()
+    return res.json(user)
   }
   catch(e) {
-    next(e)
-  }
-}
-
-exports.update = async (req, res, next) => {
-  try {
-    const { id } = req.body
-    const result = await Movies.updateOne( { _id: id }, { $set: req.body })
-    if(!result.nModified) {
-      throw new Error("Internal Error")
-    }
-    return res.json( { success: true, message: "Updated successfully" } )
-  }
-  catch(e) {
-    next(e)
-  }
-}
-
-exports.delete = async (req, res, next) => {
-  try {
-    const { id } = req.body
-    const result = await Movies.deleteOne( { _id: id } )
-    if(!result.deletedCount) {
-      throw new Error("Internal Error")
-    }
-    return res.json( { success: true, message: "Deleted successfully" } )
-  }
-  catch(e) {
-    next(e)
-  }
-}
-
-exports.getImage = async (req, res, next) => {
-  try {
-    let img = req.params.img
-    let dynamicPath = vars.dirs.project + "/uploads/" + img
-    console.log(dynamicPath)
-    if(fs.existsSync(dynamicPath)) {
-      return res.sendFile(dynamicPath)
-    }
-    return res.send('File not found')
-  }
-  catch(e) {
-    next(e)
+    return next(e)
   }
 }
