@@ -1,3 +1,3 @@
 # cinemaDB
 
-This was one of my final year projects that took me a year to do. I have front and back end code that that shown my expertise in creating website functionalities. I haved a passion for Javascript and node js, Http  etc come after.  
+These are some of the code files I made in my final year projrct. I have front and back end code that  shown my experience in creating website functionalities. I haved a passion for Javascript, node js, Http, css, SQL etc. My project was done on visual studio code editor.  
